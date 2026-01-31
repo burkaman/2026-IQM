@@ -3,6 +3,7 @@ from qiskit import QuantumCircuit, transpile
 import matplotlib.pyplot as plt
 from qiskit_aer import AerSimulator
 from qiskit_aer.noise import NoiseModel, depolarizing_error, ReadoutError
+from iqm.qiskit_iqm.iqm_provider import IQMProvider
 # from qrisp.interface import IQMBackend # Uncomment for real hardware
 
 def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
@@ -148,11 +149,13 @@ noise_model = create_noise_model(
     two_qubit_error=0.0,       # 1% error on CZ gates
     readout_error=0.00          # 2% measurement error
 )
-backend_sim = AerSimulator(noise_model=noise_model)
-
+#backend = AerSimulator(noise_model=noise_model)
+provider = IQMProvider("https://resonance.meetiqm.com", quantum_computer="garnet",
+                        token="")
+backend = provider.get_backend()
 # Test for N=4, 6, 8, 10
-for n in [4, 6, 8, 10, 30]:
-    w, pA, pB = run_cluster_witness_theorem_2(n, backend_sim)
+for n in [4, 6, 8, 10]:
+    w, pA, pB = run_cluster_witness_theorem_2(n, backend)
     print(f"N={n}: Witness = {w:.3f} (P_odd={pA:.2f}, P_even={pB:.2f})")
     # Expected for perfect state: W = 3 - 2(1+1) = -1.0
     # With noise, W will be closer to 0 (less negative)

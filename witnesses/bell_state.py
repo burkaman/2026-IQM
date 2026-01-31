@@ -69,7 +69,7 @@ def measure_two_qubit_correlator(basisA: str, basisB: str, shots: int = 20_000, 
 
     # set backend to IQM hardware
     provider = IQMProvider("https://resonance.meetiqm.com", quantum_computer="sirius",
-                           token="oXhAT4UD1nBMCR3WQhf976lyDRM7DRxdPEVO2GuQ3lQBnBVHVfd7orxK23ufeZDB")
+                           token="Gd0RjT8bNxp55sHAcVMR1oLMJJf8ML+5Ht3p7lnRd2ABnBVQQoZwg7KuvpR6rqU7")
     backend = provider.get_backend()
 
     # set backend to simulator
