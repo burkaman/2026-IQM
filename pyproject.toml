@@ -7,4 +7,5 @@ requires-python = ">= 3.11, < 3.13"
 dependencies = [
     "iqm-client[qiskit]>=33.0.3",
     "matplotlib>=3.10.8",
+    "qrisp[iqm]>=0.7.19",
 ]
