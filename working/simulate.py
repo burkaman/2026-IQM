@@ -1,5 +1,5 @@
 from optimizer import optimize_linear_cluster_path
-from witnesses.linear_witness import run_cluster_witness_theorem_2
+from linear_witness import run_cluster_witness_theorem_2
 from iqm.qiskit_iqm.iqm_provider import IQMProvider
 
 #garnet data
@@ -23,7 +23,6 @@ provider = IQMProvider(
 )
 backend = provider.get_backend()
 
-# test for n in range 2-16 inclusive
 for n in range(17, 19):
     # get optimized path
     path, edges, cost = optimize_linear_cluster_path(20, edge_data, node_cost, n, 60)
