@@ -1,8 +1,8 @@
-import numpy as np
-from qiskit import QuantumCircuit, transpile
 import matplotlib.pyplot as plt
+import numpy as np
 from iqm.qiskit_iqm.iqm_provider import IQMProvider
-# from qrisp.interface import IQMBackend # Uncomment for real hardware
+from qiskit import QuantumCircuit, transpile
+
 
 def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
     """
@@ -10,72 +10,96 @@ def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
     Formula: W = 3*I - 2*(Prob_All_Even_Satisfied + Prob_All_Odd_Satisfied)
     Target: W < 0 implies Genuine Multipartite Entanglement.
     """
-    
+
     # --- 1. PREPARE THE STATE ---
     # We create the "perfect" linear cluster state to test against
     qc_base = QuantumCircuit(n_qubits)
-    qc_base.h(range(n_qubits)) # Initialize |+>
+    qc_base.h(range(n_qubits))  # Initialize |+>
     # Apply CZ gates (Linear Topology matches IQM Garnet)
-    for i in range(0, n_qubits - 1, 2): qc_base.cz(i, i+1) # Even edges
-    for i in range(1, n_qubits - 1, 2): qc_base.cz(i, i+1) # Odd edges
+    for i in range(0, n_qubits - 1, 2):
+        qc_base.cz(i, i + 1)  # Even edges
+    for i in range(1, n_qubits - 1, 2):
+        qc_base.cz(i, i + 1)  # Odd edges
 
     # --- 2. DEFINE THE TWO SETTINGS (Fig 1c from Paper) ---
-    
+
     # Setting A: Measure stabilizers centered on EVEN QISKIT INDICES (0, 2, 4...)
     # Corresponds to Paper's "Odd k" (S1, S3...)
     # Pattern: X Z X Z ...
     qc_A = qc_base.copy()
     # To measure X, apply H. To measure Z, do nothing.
-    for i in range(0, n_qubits, 2): 
-        qc_A.h(i) 
+    for i in range(0, n_qubits, 2):
+        qc_A.h(i)
     qc_A.measure_all()
-    
+
     # Setting B: Measure stabilizers centered on ODD QISKIT INDICES (1, 3, 5...)
     # Corresponds to Paper's "Even k" (S2, S4...)
     # Pattern: Z X Z X ...
     qc_B = qc_base.copy()
-    for i in range(1, n_qubits, 2): 
+    for i in range(1, n_qubits, 2):
         qc_B.h(i)
     qc_B.measure_all()
-    
+
     # --- 3. RUN EXPERIMENT ---
     print(f"Running Witness for N={n_qubits}...")
     # fig_A = qc_A.draw(output="mpl")
     # plt.show()
-    coupling_map = [[17, 18], [11, 19], [24, 25], [19, 20], [10, 18], [31, 32], [23, 31], [25, 33], [14, 22], [16, 24], [10, 11], [16, 17], [22, 23], [32, 33]]
-    job_A = backend.run(transpile(qc_A, backend, coupling_map=coupling_map), shots=shots)
+    coupling_map = [
+        [17, 18],
+        [11, 19],
+        [24, 25],
+        [19, 20],
+        [10, 18],
+        [31, 32],
+        [23, 31],
+        [25, 33],
+        [14, 22],
+        [16, 24],
+        [10, 11],
+        [16, 17],
+        [22, 23],
+        [32, 33],
+    ]
+    job_A = backend.run(
+        transpile(qc_A, backend, coupling_map=coupling_map), shots=shots
+    )
     # fig_B = qc_B.draw(output="mpl")
     # plt.show()
-    job_B = backend.run(transpile(qc_B, backend, coupling_map=coupling_map), shots=shots)
+    job_B = backend.run(
+        transpile(qc_B, backend, coupling_map=coupling_map), shots=shots
+    )
     counts_A = job_A.result().get_counts()
     counts_B = job_B.result().get_counts()
-    
+
     # --- 4. CALCULATE PROBABILITIES (The "Product" Terms) ---
-    
+
     # Term 1: Probability that ALL "Odd k" stabilizers are +1
     # Stabilizers: S_0, S_2, S_4 (Qiskit indices)
     success_count_A = 0
     for bitstring, count in counts_A.items():
         all_satisfied = True
         # Check every stabilizer in this group
-        for i in range(0, n_qubits, 2): 
+        for i in range(0, n_qubits, 2):
             # Calculate Parity of S_i = Z_{i-1} X_i Z_{i+1}
             # Note: Qiskit bitstrings are reversed! bit[0] is qubit N-1.
             parity = 1
             # Center (X_i)
-            if bitstring[n_qubits - 1 - i] == '1': parity *= -1
+            if bitstring[n_qubits - 1 - i] == "1":
+                parity *= -1
             # Left (Z_{i-1})
-            if i > 0 and bitstring[n_qubits - 1 - (i-1)] == '1': parity *= -1
+            if i > 0 and bitstring[n_qubits - 1 - (i - 1)] == "1":
+                parity *= -1
             # Right (Z_{i+1})
-            if i < n_qubits - 1 and bitstring[n_qubits - 1 - (i+1)] == '1': parity *= -1
-            
-            if parity == -1: # Rule Broken!
+            if i < n_qubits - 1 and bitstring[n_qubits - 1 - (i + 1)] == "1":
+                parity *= -1
+
+            if parity == -1:  # Rule Broken!
                 all_satisfied = False
                 break
-        
+
         if all_satisfied:
             success_count_A += count
-            
+
     prob_A = success_count_A / shots
 
     # Term 2: Probability that ALL "Even k" stabilizers are +1
@@ -83,34 +107,41 @@ def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
     success_count_B = 0
     for bitstring, count in counts_B.items():
         all_satisfied = True
-        for i in range(1, n_qubits, 2): 
+        for i in range(1, n_qubits, 2):
             parity = 1
             # Center (X_i)
-            if bitstring[n_qubits - 1 - i] == '1': parity *= -1
+            if bitstring[n_qubits - 1 - i] == "1":
+                parity *= -1
             # Left (Z_{i-1})
-            if bitstring[n_qubits - 1 - (i-1)] == '1': parity *= -1
+            if bitstring[n_qubits - 1 - (i - 1)] == "1":
+                parity *= -1
             # Right (Z_{i+1})
-            if i < n_qubits - 1 and bitstring[n_qubits - 1 - (i+1)] == '1': parity *= -1
-            
-            if parity == -1: 
+            if i < n_qubits - 1 and bitstring[n_qubits - 1 - (i + 1)] == "1":
+                parity *= -1
+
+            if parity == -1:
                 all_satisfied = False
                 break
-                
+
         if all_satisfied:
             success_count_B += count
-            
+
     prob_B = success_count_B / shots
 
     # --- 5. COMPUTE WITNESS VALUE ---
     # W = 3 - 2 * (P_A + P_B)
     w_value = 3 - 2 * (prob_A + prob_B)
-    
+
     return w_value, prob_A, prob_B
+
 
 # --- MOCK EXECUTION ---
 # Create a noisy simulator
-provider = IQMProvider("https://resonance.meetiqm.com", quantum_computer="emerald",
-                        token="HW9Qd7JxtPsZiMcR5QAf3sWpxjen12AedmSCu9Jq4ZUBnBdnp9JzEIXjmrn2NWsY")
+provider = IQMProvider(
+    "https://resonance.meetiqm.com",
+    quantum_computer="emerald",
+    token="HW9Qd7JxtPsZiMcR5QAf3sWpxjen12AedmSCu9Jq4ZUBnBdnp9JzEIXjmrn2NWsY",
+)
 backend = provider.get_backend()
 
 # Test for N=4, 6, 8, 10

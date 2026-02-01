@@ -1,12 +1,14 @@
-import numpy as np
-from qiskit import QuantumCircuit, transpile
 import matplotlib.pyplot as plt
-from qiskit_aer import AerSimulator
-from qiskit_aer.noise import NoiseModel, depolarizing_error, ReadoutError
+import numpy as np
 from iqm.qiskit_iqm.iqm_provider import IQMProvider
-# from qrisp.interface import IQMBackend # Uncomment for real hardware
+from qiskit import QuantumCircuit, transpile
+from qiskit_aer import AerSimulator
+from qiskit_aer.noise import NoiseModel, ReadoutError, depolarizing_error
 
-def create_noise_model(single_qubit_error=0.001, two_qubit_error=0.01, readout_error=0.02):
+
+def create_noise_model(
+    single_qubit_error=0.001, two_qubit_error=0.01, readout_error=0.02
+):
     """
     Creates a realistic noise model with gate and measurement errors.
 
@@ -19,33 +21,38 @@ def create_noise_model(single_qubit_error=0.001, two_qubit_error=0.01, readout_e
 
     # Single-qubit gate errors (depolarizing)
     single_qubit_noise = depolarizing_error(single_qubit_error, 1)
-    noise_model.add_all_qubit_quantum_error(single_qubit_noise, ['h'])
+    noise_model.add_all_qubit_quantum_error(single_qubit_noise, ["h"])
 
     # Two-qubit gate errors (depolarizing)
     two_qubit_noise = depolarizing_error(two_qubit_error, 2)
-    noise_model.add_all_qubit_quantum_error(two_qubit_noise, ['cz', 'cx'])
+    noise_model.add_all_qubit_quantum_error(two_qubit_noise, ["cz", "cx"])
 
     # Readout errors
     # Probability of measuring 1 when state is 0, and measuring 0 when state is 1
-    readout_probs = [[1 - readout_error, readout_error],
-                     [readout_error, 1 - readout_error]]
+    readout_probs = [
+        [1 - readout_error, readout_error],
+        [readout_error, 1 - readout_error],
+    ]
     readout_noise = ReadoutError(readout_probs)
     noise_model.add_all_qubit_readout_error(readout_noise)
 
     return noise_model
 
+
 def bit_at_qubit(bitstring, q, n):
     # Qiskit: leftmost bit is highest index
     return 1 if bitstring[n - 1 - q] == "1" else 0
+
 
 def stabilizer_Ki(bitstring, i, n):
     # K_i = Z_{i-1} X_i Z_{i+1}
     parity = bit_at_qubit(bitstring, i, n)
     if i > 0:
-        parity ^= bit_at_qubit(bitstring, i-1, n)
-    if i < n-1:
-        parity ^= bit_at_qubit(bitstring, i+1, n)
+        parity ^= bit_at_qubit(bitstring, i - 1, n)
+    if i < n - 1:
+        parity ^= bit_at_qubit(bitstring, i + 1, n)
     return +1 if parity == 0 else -1
+
 
 def apply_stabilizer_postselection(counts, n, check_indices):
     kept = {}
@@ -60,21 +67,16 @@ def apply_stabilizer_postselection(counts, n, check_indices):
 
     return kept, rejected / total if total else 0.0
 
-def run_cluster_witness(
-    n,
-    backend,
-    shots=2000,
-    checks_A=None,
-    checks_B=None
-):
+
+def run_cluster_witness(n, backend, shots=2000, checks_A=None, checks_B=None):
     checks_A = checks_A or []
     checks_B = checks_B or []
 
     # --- Prepare linear cluster state ---
     qc_base = QuantumCircuit(n)
     qc_base.h(range(n))
-    for i in range(n-1):
-        qc_base.cz(i, i+1)
+    for i in range(n - 1):
+        qc_base.cz(i, i + 1)
 
     # --- Setting A: measure X on even sites ---
     qc_A = qc_base.copy()
@@ -111,7 +113,7 @@ def run_cluster_witness(
         return good / total
 
     even_indices = [i for i in range(0, n, 2) if i not in checks_A]
-    odd_indices  = [i for i in range(1, n, 2) if i not in checks_B]
+    odd_indices = [i for i in range(1, n, 2) if i not in checks_B]
 
     P_A = prob_all(even_indices, counts_A)
     P_B = prob_all(odd_indices, counts_B)
@@ -120,21 +122,25 @@ def run_cluster_witness(
 
     return W, P_A, P_B, rejA, rejB
 
+
 # ============================================================
 # Noise model (same spirit as your original)
 # ============================================================
 
+
 def make_noise():
     noise = NoiseModel()
-    noise.add_all_qubit_quantum_error(depolarizing_error(0.001, 1), ['h'])
-    noise.add_all_qubit_quantum_error(depolarizing_error(0.02, 2), ['cz'])
-    noise.add_all_qubit_readout_error(
-        ReadoutError([[0.998, 0.002], [0.002, 0.998]])
-    )
+    noise.add_all_qubit_quantum_error(depolarizing_error(0.001, 1), ["h"])
+    noise.add_all_qubit_quantum_error(depolarizing_error(0.02, 2), ["cz"])
+    noise.add_all_qubit_readout_error(ReadoutError([[0.998, 0.002], [0.002, 0.998]]))
     return noise
 
-provider = IQMProvider("https://resonance.meetiqm.com", quantum_computer="emerald",
-                        token="HW9Qd7JxtPsZiMcR5QAf3sWpxjen12AedmSCu9Jq4ZUBnBdnp9JzEIXjmrn2NWsY")
+
+provider = IQMProvider(
+    "https://resonance.meetiqm.com",
+    quantum_computer="emerald",
+    token="HW9Qd7JxtPsZiMcR5QAf3sWpxjen12AedmSCu9Jq4ZUBnBdnp9JzEIXjmrn2NWsY",
+)
 backend = provider.get_backend()
 
 # ============================================================
@@ -145,14 +151,7 @@ print("\n=== Cluster witness with stabilizer postselection ===")
 
 for n in [10, 12, 14, 16, 18]:
     Wp, _, _, rA, rB = run_cluster_witness(
-        n,
-        backend,
-        checks_A=[2] if n > 3 else [],
-        checks_B=[1] if n > 2 else []
+        n, backend, checks_A=[2] if n > 3 else [], checks_B=[1] if n > 2 else []
     )
 
-    print(
-        f"N={n:2d} | "
-        f"W(ps)={Wp:+.3f} | "
-        f"rejA={rA:.2f}, rejB={rB:.2f}"
-    )
+    print(f"N={n:2d} | W(ps)={Wp:+.3f} | rejA={rA:.2f}, rejB={rB:.2f}")

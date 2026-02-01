@@ -5,8 +5,6 @@ from qiskit import QuantumCircuit, transpile
 from qiskit_aer import AerSimulator
 from qiskit_aer.noise import NoiseModel, ReadoutError, depolarizing_error
 
-# from qrisp.interface import IQMBackend # Uncomment for real hardware
-
 
 def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
     """
@@ -46,9 +44,39 @@ def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
 
     # --- 3. RUN EXPERIMENT ---
     print(f"Running Witness for N={n_qubits}...")
-    coupling_map = [[0, 1], [1, 4], [4, 9], [9, 10], [10, 5], [5, 6], [6, 11], [11, 16], [16, 15], [15, 19], [19, 18], [18, 17], [17, 13], [13, 12], [12, 7]]
+    coupling_map = [
+        [0, 1],
+        [1, 4],
+        [4, 9],
+        [9, 10],
+        [10, 5],
+        [5, 6],
+        [6, 11],
+        [11, 16],
+        [16, 15],
+        [15, 19],
+        [19, 18],
+        [18, 17],
+        [17, 13],
+        [13, 12],
+        [12, 7],
+    ]
     # fig_A = qc_A.draw(output="mpl")
     # plt.show()
+    coupling_map = [
+        [0, 1],
+        [1, 5],
+        [5, 11],
+        [11, 10],
+        [10, 18],
+        [18, 17],
+        [17, 25],
+        [25, 33],
+        [33, 32],
+        [32, 31],
+        [31, 23],
+        [23, 22],
+    ]
     job_A = backend.run(
         transpile(qc_A, backend, coupling_map=coupling_map),
         shots=shots,
@@ -175,12 +203,12 @@ noise_model = create_noise_model(
 # backend = AerSimulator(noise_model=noise_model)
 provider = IQMProvider(
     "https://resonance.meetiqm.com",
-    quantum_computer="garnet",
-    token="YTdt7IXyupvFA9Vf5dHQn9Ou6qN3b7nNh1EVbH0c2pkBnBYl3TR8E6ZJLElSqz1v",
+    quantum_computer="emerald",
+    token="",
 )
 backend = provider.get_backend()
 # Test for N=4, 6, 8, 10
-for n in [15]:  # , 6, 8, 10]:
+for n in [12]:  # , 6, 8, 10]:
     w, pA, pB = run_cluster_witness_theorem_2(n, backend)
     print(f"N={n}: Witness = {w:.3f} (P_odd={pA:.2f}, P_even={pB:.2f})")
     # Expected for perfect state: W = 3 - 2(1+1) = -1.0
