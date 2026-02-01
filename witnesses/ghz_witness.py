@@ -1,8 +1,7 @@
 import numpy as np
 from qiskit import QuantumCircuit, transpile
 import matplotlib.pyplot as plt
-from qiskit_aer import AerSimulator
-from qiskit_aer.noise import NoiseModel, depolarizing_error, ReadoutError
+from iqm.qiskit_iqm.iqm_provider import IQMProvider
 
 def run_ghz_witness_theorem_1(n_qubits, backend, shots=2000):
     """
@@ -100,49 +99,13 @@ def run_ghz_witness_theorem_1(n_qubits, backend, shots=2000):
     
     return w_value, prob_A, prob_B
 
-
-def create_noise_model(single_qubit_error=0.001, two_qubit_error=0.01, readout_error=0.02):
-    """
-    Creates a realistic noise model with gate and measurement errors.
-    """
-    noise_model = NoiseModel()
-    
-    single_qubit_noise = depolarizing_error(single_qubit_error, 1)
-    noise_model.add_all_qubit_quantum_error(single_qubit_noise, ['h'])
-    
-    two_qubit_noise = depolarizing_error(two_qubit_error, 2)
-    noise_model.add_all_qubit_quantum_error(two_qubit_noise, ['cz', 'cx'])
-    
-    readout_probs = [[1 - readout_error, readout_error], 
-                     [readout_error, 1 - readout_error]]
-    readout_noise = ReadoutError(readout_probs)
-    noise_model.add_all_qubit_readout_error(readout_noise)
-    
-    return noise_model
-
-
-# --- EXECUTION ---
-print("=== Noisy Simulation: GHZ Witness (Theorem 1) ===")
-print("Noise Parameters:")
-print("  Single-qubit gates (H): 1.0% error")
-print("  Two-qubit gates (CX): 2.0% error")
-print("  Readout: 2.0% error\n")
-
-noise_model = create_noise_model(
-    single_qubit_error=0.01,
-    two_qubit_error=0.02,
-    readout_error=0.02
-)
-backend_sim = AerSimulator(noise_model=noise_model)
-
-# Theoretical noise tolerance: p_noise < 1/(3 - 4/2^N), approaches 1/3 for large N.
-# So the witness should remain negative up to ~33% effective noise.
-# However, CNOT depth scales as N-1, so accumulated gate error will dominate at large N.
-
+provider = IQMProvider("https://resonance.meetiqm.com", quantum_computer="emerald",
+                        token="HW9Qd7JxtPsZiMcR5QAf3sWpxjen12AedmSCu9Jq4ZUBnBdnp9JzEIXjmrn2NWsY")
+backend = provider.get_backend()
 print(f"{'N':>4} | {'Witness W':>10} | {'P_A (X parity)':>14} | {'P_B (Z pairs)':>14} | {'GME?':>5}")
 print("-" * 60)
-for n in [4, 6, 8, 10, 11, 12, 13, 14, 15, 16, 20, 25, 30]:
-    w, pA, pB = run_ghz_witness_theorem_1(n, backend_sim, shots=4000)
+for n in [14]:
+    w, pA, pB = run_ghz_witness_theorem_1(n, backend, shots=4000)
     gme = "YES" if w < 0 else "no"
     print(f"{n:>4} | {w:>10.3f} | {pA:>14.4f} | {pB:>14.4f} | {gme:>5}")
     # Perfect state: P_A = 1, P_B = 1, W = -1
