@@ -47,16 +47,40 @@ def interpolate_color(
     # Normalize value to 0-1 range
     t = (value - min_val) / (max_val - min_val)
 
-    # Convert hex to RGB
-    min_rgb = hex_to_rgb(min_color)
-    max_rgb = hex_to_rgb(max_color)
+    # Viridis color scheme REVERSED: yellow (low) -> green -> teal -> purple (high)
+    # Key colors from the viridis palette (reversed)
+    viridis_colors = [
+        (0.477504, 0.821444, 0.318195),  # Yellow-green
+        (0.266941, 0.748751, 0.440573),  # Green
+        (0.134692, 0.658636, 0.517649),  # Green-teal
+        (0.127568, 0.566949, 0.550556),  # Teal
+        (0.163625, 0.471133, 0.558148),  # Teal-blue
+        (0.206756, 0.371758, 0.553117),  # Blue
+        (0.253935, 0.265254, 0.529983),  # Blue-purple
+        (0.282623, 0.140926, 0.457517),  # Purple
+        (0.267004, 0.004874, 0.329415),  # Dark purple (high values)
+    ]
 
-    # Interpolate each channel
-    r = int(min_rgb[0] + t * (max_rgb[0] - min_rgb[0]))
-    g = int(min_rgb[1] + t * (max_rgb[1] - min_rgb[1]))
-    b = int(min_rgb[2] + t * (max_rgb[2] - min_rgb[2]))
+    # Find the two colors to interpolate between
+    n_colors = len(viridis_colors)
+    scaled_t = t * (n_colors - 1)
+    idx = int(scaled_t)
 
-    return rgb_to_hex((r, g, b))
+    if idx >= n_colors - 1:
+        # At or beyond the maximum
+        r, g, b = viridis_colors[-1]
+    else:
+        # Interpolate between two adjacent colors
+        local_t = scaled_t - idx
+        c1 = viridis_colors[idx]
+        c2 = viridis_colors[idx + 1]
+
+        r = c1[0] + local_t * (c2[0] - c1[0])
+        g = c1[1] + local_t * (c2[1] - c1[1])
+        b = c1[2] + local_t * (c2[2] - c1[2])
+
+    # Convert from 0-1 range to 0-255 range
+    return rgb_to_hex((int(r * 255), int(g * 255), int(b * 255)))
 
 
 # Qubit positions (0-indexed node_num -> (x, y, label))
@@ -87,13 +111,13 @@ QUBIT_POSITIONS = {
 # These are the connections between qubits
 COUPLER_CONNECTIONS = {
     (0, 1): (550.795, 567.96, 225),
-    (0, 4): (550.795, 500.79499999999996, 315),
+    (1, 4): (550.795, 500.79499999999996, 315),
     (2, 8): (416.37, 500.79499999999996, 315),
     (3, 4): (483.63, 500.79499999999996, 225),
     (4, 5): (550.795, 433.63, 225),
     (4, 9): (483.63, 433.63, 315),
     (5, 10): (550.795, 366.37, 315),
-    (6, 10): (617.96, 299.205, 315),
+    (6, 11): (617.96, 299.205, 315),
     (7, 8): (349.205, 500.79499999999996, 225),
     (7, 12): (282.04, 500.79499999999996, 315),
     (8, 9): (416.37, 433.63, 225),
