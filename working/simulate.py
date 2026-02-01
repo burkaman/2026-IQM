@@ -1,6 +1,7 @@
 from optimizer import optimize_linear_cluster_path
 from linear_witness import run_cluster_witness_theorem_2
 from iqm.qiskit_iqm.iqm_provider import IQMProvider
+from qiskit_aer import AerSimulator
 
 #garnet data
 edge_data = [([18, 17], 0.18368804661031968), ([9, 10], 0.29178665557484385), ([13, 12], 1.1162589543305956), ([18, 19], 0.12760287712831886), ([3, 4], 7.698242462739158), ([11, 10], 0.4849068709610771), ([13, 14], 0.9584088942435565), ([1, 4], 0.21131905149636143), ([13, 8], 0.4934355869787632), ([15, 10], 0.5757440802106051), ([9, 4], 0.5104884287033373), ([11, 6], 0.25524898234603466), ([13, 17], 0.42224936140939917), ([15, 19], 0.36463650336719944), ([7, 12], 0.6137507088124439), ([9, 14], 0.6632456296422617), ([11, 16], 0.39494925123836344), ([3, 8], 6.19555484287252), ([5, 10], 0.8317877542178387), ([18, 14], 0.39979274222825545), ([5, 4], 0.8913503940611966), ([7, 8], 1.2429394607743616), ([15, 14], 0.26519635616050197), ([1, 0], 0.2398695990178834), ([5, 6], 0.5416455042012602), ([9, 8], 1.0088600974843764), ([15, 16], 0.38932518390986104)]
@@ -22,8 +23,9 @@ provider = IQMProvider(
     token="kXL7TYp+aF382y0PoH+iJ9bfYPCbhwDt8fZCu7KHoaMBnBezagx+Q5zUHT1QCtkp",
 )
 backend = provider.get_backend()
+#backend = AerSimulator()
 
-for n in range(17, 19):
+for n in range(2, 30):
     # get optimized path
     path, edges, cost = optimize_linear_cluster_path(20, edge_data, node_cost, n, 60)
     edges = [[u, v] for (u, v, _) in edges]
