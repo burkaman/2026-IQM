@@ -3,6 +3,7 @@ Linear Cluster State Witness with Error Mitigation
 
 Mitigation techniques (each mathematically independent):
 1. M3 Readout Error Mitigation - per-qubit error characterization with quasi-probability correction
+(We found that this was unfortunately not supported by the IQM backend we used)
 2. Zero Noise Extrapolation (ZNE) - runs at multiple noise levels, extrapolates to zero
 
 Reference: Toth & Guhne Theorem 2

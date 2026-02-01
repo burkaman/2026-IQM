@@ -1,5 +1,7 @@
 """
-Shadow-Based Entanglement Depth Certification
+Shadow-Based Entanglement Depth Certification based on https://arxiv.org/abs/2601.00859v1
+
+We tried it, but weren't able to get it to work, and didn't fully understand the idea. 
 
 Uses classical shadows to implement the ROBUST Tóth-Gühne Theorem 1 witness:
     W = (n-1)·I - Σ K_i
