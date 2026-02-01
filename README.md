@@ -7,7 +7,7 @@ The most important files to look out for can be found in the `working/` director
 You can also check out some of the other witnesses we tried to use in the `witnesses/` directory, as well as some variants of the witness algorithms we tried to implement. `calibration_data/` simply contains data from IQM's website and scripts for parsing data, and `visualization/` contains scripts for visualizing some of the data we gathered.
 
 ## Background
-We use entanglement witnesses for two primary classes of quantum circuits, as outlined in [this]([url](https://arxiv.org/pdf/quant-ph/0405165)) paper.
+We use entanglement witnesses for two primary classes of quantum circuits, as outlined in [this]([https://arxiv.org/pdf/quant-ph/0405165]) paper.
 
 ## Approach
 We approached this challenge with two primary goals in mind:
