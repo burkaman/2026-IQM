@@ -144,9 +144,9 @@ print("  Two-qubit gates (CZ): 1.0% error")
 print("  Readout: 2.0% error\n")
 
 noise_model = create_noise_model(
-     single_qubit_error=0.001,
+     single_qubit_error=0.01,
         two_qubit_error=0.02,
-        readout_error=0.002
+        readout_error=0.02
 )
 backend_sim = AerSimulator(noise_model=noise_model)
 

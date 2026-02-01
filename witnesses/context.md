@@ -1,0 +1,1 @@
+I have a NISQ quantum computer and want to prove rigorously that as many qubits as possible are entangled. What is the best / most noise robust / correctable / etc entanglement witness I can use for this? Bonus if it works for a wide range of orthogonal states 
