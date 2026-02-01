@@ -8,6 +8,7 @@ dependencies = [
     "iqm-client[qiskit]>=33.0.3",
     "matplotlib>=3.10.8",
     "mitiq==0.48.1",
+    "mthree>=3.0.0",
     "ortools>=9.9.3963",
     "ply>=3.11",
 ]
