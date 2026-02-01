@@ -46,46 +46,17 @@ def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
 
     # --- 3. RUN EXPERIMENT ---
     print(f"Running Witness for N={n_qubits}...")
+    coupling_map = [[0, 1], [1, 4], [4, 9], [9, 10], [10, 5], [5, 6], [6, 11], [11, 16], [16, 15], [15, 19], [19, 18], [18, 17], [17, 13], [13, 12], [12, 7]]
     # fig_A = qc_A.draw(output="mpl")
     # plt.show()
     job_A = backend.run(
-        transpile(
-            qc_A,
-            backend,
-            coupling_map=[
-                list(edge)
-                for edge in backend.coupling_map
-                if set(edge).issubset(
-                    set(
-                        [
-                            backend.qubit_name_to_index(name)
-                            for name in ["QB15", "QB16", "QB17", "QB12"]
-                        ]
-                    )
-                )
-            ],
-        ),
+        transpile(qc_A, backend, coupling_map=coupling_map),
         shots=shots,
     )
     # fig_B = qc_B.draw(output="mpl")
     # plt.show()
     job_B = backend.run(
-        transpile(
-            qc_B,
-            backend,
-            coupling_map=[
-                list(edge)
-                for edge in backend.coupling_map
-                if set(edge).issubset(
-                    set(
-                        [
-                            backend.qubit_name_to_index(name)
-                            for name in ["QB15", "QB16", "QB17", "QB12"]
-                        ]
-                    )
-                )
-            ],
-        ),
+        transpile(qc_B, backend, coupling_map=coupling_map),
         shots=shots,
     )
     counts_A = job_A.result().get_counts()
@@ -190,11 +161,11 @@ def create_noise_model(
 
 # --- MOCK EXECUTION ---
 # Create a noisy simulator
-print("=== Noisy Simulation ===")
-print("Noise Parameters:")
-print("  Single-qubit gates (H): 0.1% error")
-print("  Two-qubit gates (CZ): 1.0% error")
-print("  Readout: 2.0% error\n")
+# print("=== Noisy Simulation ===")
+# print("Noise Parameters:")
+# print("  Single-qubit gates (H): 0.1% error")
+# print("  Two-qubit gates (CZ): 1.0% error")
+# print("  Readout: 2.0% error\n")
 
 noise_model = create_noise_model(
     single_qubit_error=0.00,  # 0.1% error on H gates
@@ -205,11 +176,11 @@ noise_model = create_noise_model(
 provider = IQMProvider(
     "https://resonance.meetiqm.com",
     quantum_computer="garnet",
-    token="",
+    token="YTdt7IXyupvFA9Vf5dHQn9Ou6qN3b7nNh1EVbH0c2pkBnBYl3TR8E6ZJLElSqz1v",
 )
 backend = provider.get_backend()
 # Test for N=4, 6, 8, 10
-for n in [4]:  # , 6, 8, 10]:
+for n in [15]:  # , 6, 8, 10]:
     w, pA, pB = run_cluster_witness_theorem_2(n, backend)
     print(f"N={n}: Witness = {w:.3f} (P_odd={pA:.2f}, P_even={pB:.2f})")
     # Expected for perfect state: W = 3 - 2(1+1) = -1.0

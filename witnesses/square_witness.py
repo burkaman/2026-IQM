@@ -3,6 +3,7 @@ from qiskit import QuantumCircuit, transpile
 import matplotlib.pyplot as plt
 from qiskit_aer import AerSimulator
 from qiskit_aer.noise import NoiseModel, depolarizing_error, ReadoutError
+from iqm.qiskit_iqm.iqm_provider import IQMProvider
 
 def get_neighbors_2d(row, col, grid_size):
     """Get the neighbors of a qubit in a 2D square grid."""
@@ -230,12 +231,18 @@ if __name__ == "__main__":
         two_qubit_error=0.02,
         readout_error=0.002
     )
-    backend_sim = AerSimulator(noise_model=noise_model)
-    
+    #backend_sim = AerSimulator(noise_model=noise_model)
+    provider = IQMProvider(
+        "https://resonance.meetiqm.com",
+        quantum_computer="emerald",
+        token="YTdt7IXyupvFA9Vf5dHQn9Ou6qN3b7nNh1EVbH0c2pkBnBYl3TR8E6ZJLElSqz1v",
+    )
+    backend = provider.get_backend()
+
     # Test different square grid sizes
     for grid_size in [2, 3, 4]:
         visualize_grid(grid_size)
-        w, pA, pB = run_square_witness(grid_size, backend_sim, shots=5000)
+        w, pA, pB = run_square_witness(grid_size, backend, shots=5000)
         print(f"{grid_size}x{grid_size} Grid: Witness = {w:.3f} (P_white={pA:.3f}, P_black={pB:.3f})")
         print(f"  -> Entanglement: {'✓ YES' if w < 0 else '✗ NO'} (W < 0 required)\n")
     
