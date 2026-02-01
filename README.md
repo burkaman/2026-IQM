@@ -16,6 +16,8 @@ We approached this challenge with two primary goals in mind:
 
 For the first goal, we used `random_graph_witness.py` 
 
-## Results
+## Charts and Visualizations
+
+See the visualization directory for graphs of our results.
 
 ## Optimization Techniques
