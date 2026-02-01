@@ -235,7 +235,7 @@ if __name__ == "__main__":
     provider = IQMProvider(
         "https://resonance.meetiqm.com",
         quantum_computer="emerald",
-        token="YTdt7IXyupvFA9Vf5dHQn9Ou6qN3b7nNh1EVbH0c2pkBnBYl3TR8E6ZJLElSqz1v",
+        token="kXL7TYp+aF382y0PoH+iJ9bfYPCbhwDt8fZCu7KHoaMBnBezagx+Q5zUHT1QCtkp",
     )
     backend = provider.get_backend()
 

@@ -44,29 +44,15 @@ def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
     print(f"Running Witness for N={n_qubits}...")
     # fig_A = qc_A.draw(output="mpl")
     # plt.show()
-    coupling_map = [
-        [17, 18],
-        [11, 19],
-        [24, 25],
-        [19, 20],
-        [10, 18],
-        [31, 32],
-        [23, 31],
-        [25, 33],
-        [14, 22],
-        [16, 24],
-        [10, 11],
-        [16, 17],
-        [22, 23],
-        [32, 33],
-    ]
+    coupling_map=[[0, 1], [1, 4], [4, 9], [9, 10], [10, 5], [5, 6], [6, 11], [11, 16], [16, 15], [15, 19], [19, 18], [18, 17], [17, 13], [13, 8], [8, 7], [7, 12]]
+    initial_layout=[0, 1, 4, 9, 10, 5, 6, 11, 16, 15, 19, 18, 17, 13, 8, 7, 12]
     job_A = backend.run(
-        transpile(qc_A, backend, coupling_map=coupling_map), shots=shots
+        transpile(qc_A, backend, coupling_map=coupling_map, initial_layout=initial_layout), shots=shots
     )
     # fig_B = qc_B.draw(output="mpl")
     # plt.show()
     job_B = backend.run(
-        transpile(qc_B, backend, coupling_map=coupling_map), shots=shots
+        transpile(qc_B, backend, coupling_map=coupling_map, initial_layout=initial_layout), shots=shots
     )
     counts_A = job_A.result().get_counts()
     counts_B = job_B.result().get_counts()
@@ -139,13 +125,13 @@ def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
 # Create a noisy simulator
 provider = IQMProvider(
     "https://resonance.meetiqm.com",
-    quantum_computer="emerald",
-    token="HW9Qd7JxtPsZiMcR5QAf3sWpxjen12AedmSCu9Jq4ZUBnBdnp9JzEIXjmrn2NWsY",
+    quantum_computer="garnet",
+    token="kXL7TYp+aF382y0PoH+iJ9bfYPCbhwDt8fZCu7KHoaMBnBezagx+Q5zUHT1QCtkp",
 )
 backend = provider.get_backend()
 
 # Test for N=4, 6, 8, 10
-for n in [15]:
+for n in [17]:
     w, pA, pB = run_cluster_witness_theorem_2(n, backend)
     print(f"N={n}: Witness = {w:.3f} (P_odd={pA:.2f}, P_even={pB:.2f})")
     # Expected for perfect state: W = 3 - 2(1+1) = -1.0
