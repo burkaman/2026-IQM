@@ -4,7 +4,7 @@ from iqm.qiskit_iqm.iqm_provider import IQMProvider
 from qiskit import QuantumCircuit, transpile
 
 
-def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
+def run_cluster_witness_theorem_2(n_qubits, backend, coupling_map, initial_layout, shots=2000):
     """
     Implements the Cluster State Witness from Toth & Guhne Theorem 2.
     Formula: W = 3*I - 2*(Prob_All_Even_Satisfied + Prob_All_Odd_Satisfied)
@@ -44,8 +44,6 @@ def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
     print(f"Running Witness for N={n_qubits}...")
     # fig_A = qc_A.draw(output="mpl")
     # plt.show()
-    coupling_map=[[0, 1], [1, 4], [4, 9], [9, 10], [10, 5], [5, 6], [6, 11], [11, 16], [16, 15], [15, 19], [19, 18], [18, 17], [17, 13], [13, 8], [8, 7], [7, 12]]
-    initial_layout=[0, 1, 4, 9, 10, 5, 6, 11, 16, 15, 19, 18, 17, 13, 8, 7, 12]
     job_A = backend.run(
         transpile(qc_A, backend, coupling_map=coupling_map, initial_layout=initial_layout), shots=shots
     )
@@ -119,20 +117,3 @@ def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
     w_value = 3 - 2 * (prob_A + prob_B)
 
     return w_value, prob_A, prob_B
-
-
-# --- MOCK EXECUTION ---
-# Create a noisy simulator
-provider = IQMProvider(
-    "https://resonance.meetiqm.com",
-    quantum_computer="garnet",
-    token="kXL7TYp+aF382y0PoH+iJ9bfYPCbhwDt8fZCu7KHoaMBnBezagx+Q5zUHT1QCtkp",
-)
-backend = provider.get_backend()
-
-# Test for N=4, 6, 8, 10
-for n in [17]:
-    w, pA, pB = run_cluster_witness_theorem_2(n, backend)
-    print(f"N={n}: Witness = {w:.3f} (P_odd={pA:.2f}, P_even={pB:.2f})")
-    # Expected for perfect state: W = 3 - 2(1+1) = -1.0
-    # With noise, W will be closer to 0 (less negative)
