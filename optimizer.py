@@ -72,10 +72,10 @@ def solve_k_node_tree(num_nodes, edges, node_costs, k, time_limit_sec=60):
     solver.Add(sum(y[ei] for ei in E) == k - 1)
 
     # 7) Force path topology: every selected node has at most 2 tree edges
-    #for v in V:
-    #   incident = [y[ei] for ei, (u, w_, wt) in enumerate(edges) if u == v or w_ == v]
-    #   if incident:
-    #       solver.Add(sum(incident) <= 2)
+    for v in V:
+       incident = [y[ei] for ei, (u, w_, wt) in enumerate(edges) if u == v or w_ == v]
+       if incident:
+           solver.Add(sum(incident) <= 2)
 
     # Objective: node costs + edge costs
     solver.Minimize(
@@ -84,7 +84,7 @@ def solve_k_node_tree(num_nodes, edges, node_costs, k, time_limit_sec=60):
     )
 
     status = solver.Solve()
-    if status not in (pywraplp.Solver.OPTIMAL):
+    if status != pywraplp.Solver.OPTIMAL:
         raise RuntimeError("No feasible solution (graph may not have a connected k-node subgraph).")
 
     selected_nodes = [v for v in V if x[v].solution_value() > 0.5]

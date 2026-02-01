@@ -1,8 +1,7 @@
 import numpy as np
 from qiskit import QuantumCircuit, transpile
 import matplotlib.pyplot as plt
-from qiskit_aer import AerSimulator
-from qiskit_aer.noise import NoiseModel, depolarizing_error, ReadoutError
+from iqm.qiskit_iqm.iqm_provider import IQMProvider
 # from qrisp.interface import IQMBackend # Uncomment for real hardware
 
 def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
@@ -43,10 +42,11 @@ def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
     print(f"Running Witness for N={n_qubits}...")
     # fig_A = qc_A.draw(output="mpl")
     # plt.show()
-    job_A = backend.run(transpile(qc_A, backend), shots=shots)
+    coupling_map = [[17, 18], [11, 19], [24, 25], [19, 20], [10, 18], [31, 32], [23, 31], [25, 33], [14, 22], [16, 24], [10, 11], [16, 17], [22, 23], [32, 33]]
+    job_A = backend.run(transpile(qc_A, backend, coupling_map=coupling_map), shots=shots)
     # fig_B = qc_B.draw(output="mpl")
     # plt.show()
-    job_B = backend.run(transpile(qc_B, backend), shots=shots)
+    job_B = backend.run(transpile(qc_B, backend, coupling_map=coupling_map), shots=shots)
     counts_A = job_A.result().get_counts()
     counts_B = job_B.result().get_counts()
     
@@ -107,52 +107,15 @@ def run_cluster_witness_theorem_2(n_qubits, backend, shots=2000):
     
     return w_value, prob_A, prob_B
 
-def create_noise_model(single_qubit_error=0.001, two_qubit_error=0.01, readout_error=0.02):
-    """
-    Creates a realistic noise model with gate and measurement errors.
-    
-    Args:
-        single_qubit_error: Error probability for single-qubit gates (e.g., H)
-        two_qubit_error: Error probability for two-qubit gates (e.g., CZ)
-        readout_error: Measurement error probability
-    """
-    noise_model = NoiseModel()
-    
-    # Single-qubit gate errors (depolarizing)
-    single_qubit_noise = depolarizing_error(single_qubit_error, 1)
-    noise_model.add_all_qubit_quantum_error(single_qubit_noise, ['h'])
-    
-    # Two-qubit gate errors (depolarizing)
-    two_qubit_noise = depolarizing_error(two_qubit_error, 2)
-    noise_model.add_all_qubit_quantum_error(two_qubit_noise, ['cz', 'cx'])
-    
-    # Readout errors
-    # Probability of measuring 1 when state is 0, and measuring 0 when state is 1
-    readout_probs = [[1 - readout_error, readout_error], 
-                     [readout_error, 1 - readout_error]]
-    readout_noise = ReadoutError(readout_probs)
-    noise_model.add_all_qubit_readout_error(readout_noise)
-    
-    return noise_model
-
 # --- MOCK EXECUTION ---
 # Create a noisy simulator
-print("=== Noisy Simulation ===")
-print("Noise Parameters:")
-print("  Single-qubit gates (H): 0.1% error")
-print("  Two-qubit gates (CZ): 1.0% error")
-print("  Readout: 2.0% error\n")
-
-noise_model = create_noise_model(
-     single_qubit_error=0.01,
-        two_qubit_error=0.02,
-        readout_error=0.02
-)
-backend_sim = AerSimulator(noise_model=noise_model)
+provider = IQMProvider("https://resonance.meetiqm.com", quantum_computer="emerald",
+                        token="HW9Qd7JxtPsZiMcR5QAf3sWpxjen12AedmSCu9Jq4ZUBnBdnp9JzEIXjmrn2NWsY")
+backend = provider.get_backend()
 
 # Test for N=4, 6, 8, 10
-for n in [4, 6, 8, 10, 11, 12, 13, 14, 15, 16, 20, 25, 30]:
-    w, pA, pB = run_cluster_witness_theorem_2(n, backend_sim)
+for n in [15]:
+    w, pA, pB = run_cluster_witness_theorem_2(n, backend)
     print(f"N={n}: Witness = {w:.3f} (P_odd={pA:.2f}, P_even={pB:.2f})")
     # Expected for perfect state: W = 3 - 2(1+1) = -1.0
     # With noise, W will be closer to 0 (less negative)
