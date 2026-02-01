@@ -14,10 +14,11 @@ We approached this challenge with two primary goals in mind:
 1. Devise and implement (in code) a task that can act as a benchmark for multipartite entanglement capabilities on quantum hardware.
 2. Push IQM's own quantum hardware as far as possible on the benchmark we create.
 
-For the first goal, we used `random_graph_witness.py` 
+## Results and Deliverables
 
-## Charts and Visualizations
+For the first goal, we used `random_graph_witness.py` to generate a variety of graph states (varied both by circuit breadth and depth) that we tested on quantum hardware using the method outlined in the above paper. Results for these experiments are shown in `visualizations/heatmap.png`. We also consider `random_graph_witness.py` a crucial deliverable in itself, as it has powerful capabilities as a benchmarking tool.
 
-See the visualization directory for graphs of our results.
+For the second goal, we decided to pick a small subset of these graph states and tried to demonstrate entanglement on as many qubits as possible, using IQM's Garnet machine. We prove the presence of entangled states on as many as 16 qubits. More detailed results are captured in `visualizations/witness_plot_with_errors.png`.
 
-## Optimization Techniques
+## Thank You
+We had a great time doing this challenge, and would like to sincerely extend our gratitude to all those at IQM who made this possible!
